@@ -1,9 +1,24 @@
-import React from 'react'
-import list from './list.json'
+import React,{useState,useEffect} from 'react'
+// import list from './list.json' it is used when we are taking the data from the frontend
 import Cards from './Cards';
+import axios from "axios";
 import {Link} from 'react-router-dom'
 export default function Course() {
-    console.log(list);
+    // console.log(list);
+    const [book,setBook] = useState([]);
+    useEffect(() =>{
+        const getBook=async()=>{
+            try{
+                const res= await axios.get("http://localhost:4000/book");
+                console.log(res.data);
+                setBook(res.data);
+            } catch(error){
+                console.log("Error in getting the data from :"+error);
+            }
+        }
+        getBook();
+    },[]);
+
   return (
     <>
         <div className='max-w-screen-2x1 container mx-auto md:px-0 px-1'>
@@ -23,7 +38,7 @@ export default function Course() {
             </div>
             <div className='mt-12 grid grid-cols-1 md:grid-cols-4'>
                 {
-                    list.map((item) => (
+                    book.map((item) => (
                         <Cards item={item} key={item.id}/>
                     ))
                 }
