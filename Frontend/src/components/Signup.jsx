@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom'
 import Login from './Login'
 import { useForm } from "react-hook-form"
 import axios from "axios";
-
+import toast from "react-hot-toast";
 export default function Signup() {
 
   const {
@@ -22,14 +22,14 @@ export default function Signup() {
       .then((res) => {
         console.log(res.data);
         if(res.data){
-          alert("Signup Successfuly");
+          toast.success("Signin Successfully");
         }
         localStorage.setItem("Users",JSON.stringify(res.data.user)); //here i am saving thuser to its local storage so that we can use sessions
       })
       .catch((err) => {
         if(err.response){
           console.log(err);
-          alert("Error: "+err.response.data.message);
+          toast.error("Error: "+err.response.data.message);
         }
       })
 
