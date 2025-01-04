@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Animesh-Maurya/BookStoreApp#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
