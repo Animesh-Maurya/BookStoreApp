@@ -1,10 +1,13 @@
 import React from 'react'
-import {Link} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 import Login from './Login'
 import { useForm } from "react-hook-form"
 import axios from "axios";
 import toast from "react-hot-toast";
+
 export default function Signup() {
+
+  const navigate = useNavigate(); 
 
   const {
       register,
@@ -23,6 +26,7 @@ export default function Signup() {
         console.log(res.data);
         if(res.data){
           toast.success("Signin Successfully");
+          navigate("/");
         }
         localStorage.setItem("Users",JSON.stringify(res.data.user)); //here i am saving thuser to its local storage so that we can use sessions
       })
