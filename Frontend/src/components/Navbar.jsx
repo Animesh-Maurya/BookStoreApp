@@ -43,7 +43,7 @@ export default function Navbar() {
 
     const navItem=(
         <>
-             <li><Link to="/">Home</Link></li> {/* /when we want to did not reload the wed page we are going ot use the Link */}
+             <li><Link to="/">Home</Link></li> {/* as/when we want to did not reload the wed page we are going ot use the Link */}
             <li><Link to="/courses">Cousre</Link></li>
             <li><Link to="/contact">Contact</Link></li>
             <li><a>About</a></li>
