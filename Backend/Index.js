@@ -15,6 +15,8 @@ app.use(cors()); //this is we are using beacuse we can not directly use the axio
 app.use(express.json()); //this is a middleware we are doing this beacuse when we are taking the data of the login from postman it is
 // in the from of json so we need to parse it
 dotenv.config();
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(express.static("public"))
 
 const PORT=process.env.PORT || 4001;
 const URI=process.env.MONGODBURI;
