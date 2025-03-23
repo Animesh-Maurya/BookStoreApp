@@ -1,36 +1,36 @@
-import mongoose,{Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const userSchema=Schema({
-    fullname:{
-        type:String,
-        require:true,
+const userSchema = new Schema({
+    fullname: {
+        type: String,
+        required: true, // ✅ Fixed `require` to `required`
     },
-    email :{
-        type:String,
-        require:true,
+    email: {
+        type: String,
+        required: true,
+        unique: true, // ✅ Ensures no duplicate emails
     },
-    role :{
-        type:String,
-        required:true,
+    role: {
+        type: String,
+        required: true,
+        default: "user", // ✅ Sets default role
     },
-    password:{
-        type:String,
-        require:true,
+    password: {
+        type: String,
+        required: true,
     },
-    cart:[
+    cart: [
         {
-            type:Schema.Types.ObjectId,
-            ref:'Book'
-        }
+            type: Schema.Types.ObjectId,
+            ref: "Book",
+        },
     ],
-    bought_books:[
+    bought_books: [
         {
-            type:Schema.Types.ObjectId,
-            ref:'Book'
-        }
+            type: Schema.Types.ObjectId,
+            ref: "Book",
+        },
     ],
-},
-    {timestaps: true}
-);
+}, { timestamps: true }); // ✅ Fixed spelling error
 
-export const User=mongoose.model("User",userSchema);
+export const User = mongoose.model("User", userSchema);
