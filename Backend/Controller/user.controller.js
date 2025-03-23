@@ -152,7 +152,7 @@ const logoutUser = asyncHandler(async (req, res) => {
       }
   
       // Generate JWT Token
-      const token = jwt.sign({ _id: user._id }, secret, { expiresIn: "1h" });
+      const token = jwt.sign({ _id: user._id }, secret, { expiresIn: "456h" });
   
       // Set token as an HTTP-only cookie
       res.cookie("token", token, {
