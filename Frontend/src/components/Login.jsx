@@ -24,12 +24,13 @@ export default function Login() {
     };
     await axios.post("http://localhost:4000/user/login",userInfo)
     .then((res) => {
-      console.log(res.data);
+      console.log(res);
       if(res.data){
         toast.success("Loggedin Successfully");
         setTimeout(()=> {
           document.getElementById('my_modal_3').close();
-          window.location.reload();
+          // window.location.reload();
+          console.log("data", res)
           localStorage.setItem("Users",JSON.stringify(res.data.user)); //here i am saving thuser to its local storage so that we can use sessions
         },1000)
 
