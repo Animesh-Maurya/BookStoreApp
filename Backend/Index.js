@@ -1,35 +1,47 @@
-//to use the import method we had changed the setting of the 
-// package.json and added a new field of (type that is "module"). 
-
-import express from "express";
+// Import modules
 import dotenv from "dotenv";
+dotenv.config({ path: './.env'});
+import express from "express";
+
 import mongoose from "mongoose";
 import bookRoute from "./route/book.route.js";
 import userRoute from "./route/user.router.js";
-
+// import authRoute from "./route/auth.route.js"; // ✅ Ensure this file contains the googleLogin route
 import cors from "cors";
-const app=express();
+import cookieParser from "cookie-parser";
+// Initialize Express
+const app = express();
 
-app.use(cors()); //this is we are using beacuse we can not directly use the axios in the out frontend because our front
-//end run on different server and our backend serve on different server..
-app.use(express.json()); //this is a middleware we are doing this beacuse when we are taking the data of the login from postman it is
-// in the from of json so we need to parse it
-dotenv.config();
+// Middleware
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
-const PORT=process.env.PORT || 4001;
-const URI=process.env.MONGODBURI;
-// connect to mongoDB
-try{
-    
+// ✅ Fix: Remove problematic headers that may block OAuth requests
+// ❌ Don't manually set `Cross-Origin-Opener-Policy` for OAuth
+app.use(cors({ origin: "http://localhost:5173", credentials: true })); 
+app.use(express.static("public"));
+
+// MongoDB Connection
+const PORT = process.env.PORT || 4001;
+const URI = process.env.MONGODBURI;
+
+try {
     mongoose.connect(URI);
-    console.log("Data Base connected ...");
-}catch(error){
-    console.log("Error in connecting to the data base:" +error);
+    console.log("Database connected ...");
+} catch (error) {
+    console.log("Error connecting to the database:", error);
 }
 
-//defining routes
-app.use("/book",bookRoute);
-app.use("/user",userRoute);
-app.listen(PORT,()=>{
-    console.log(`Server is listening on the port ${PORT}`);
-})
+// Routes
+app.use("/book/", bookRoute);
+app.use("/user/", userRoute);
+app.all('*', (req, res, next) => {
+    next(new AppError(`Can't find ${req.originalUrl} on the server`, 404));
+});
+// app.use("/auth", authRoute); // ✅ Added authentication route
+
+// Start Server
+app.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+});

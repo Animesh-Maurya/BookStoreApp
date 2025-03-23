@@ -1,29 +1,41 @@
-import React from 'react'
-import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthProvider';
-export default function Logout() {
+import React from "react";
+import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthProvider";
 
-    const [authUser,setAuthUser] = useAuth();
-    const handleLogout = () => {
-        try{
-            setAuthUser({
-                ...authUser,
-                user:null,
-            })
-            localStorage.removeItem("Users");
-            toast.success("Logout successfully");
-            window.location.reload(); //jab User LogOut ho jaye tbb website apne app relode ho jaye...
-        } catch(error){
-            toast.error("Error: "+error.message);
-        }
+export default function Logout() {
+  const [authUser, setAuthUser] = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/user/logout", {
+        method: "POST",
+        credentials: "include", // ✅ Ensures cookies are sent with request
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setAuthUser(null); // ✅ Remove user from context
+        localStorage.removeItem("Users"); // ✅ Clear local storage
+        toast.success(data.message || "Logout successful");
+        window.location.reload(); // ✅ Refresh page after logout
+      } else {
+        toast.error(data.message || "Logout failed");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Error: " + error.message);
     }
+  };
 
   return (
     <div>
-        <button className='px-3 py-2 bg-red-500 text-white rounded-md cursor-pointer'
-        onClick={handleLogout}>
-            Logout
-        </button>
+      <button
+        className="px-3 py-2 bg-red-500 text-white rounded-md cursor-pointer"
+        onClick={handleLogout}
+      >
+        Logout
+      </button>
     </div>
-  )
+  );
 }
