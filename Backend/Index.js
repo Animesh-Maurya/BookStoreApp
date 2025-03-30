@@ -6,6 +6,9 @@ import express from "express";
 import mongoose from "mongoose";
 import bookRoute from "./route/book.route.js";
 import userRoute from "./route/user.router.js";
+import cartRoute from "./route/routes.cart.js";
+import adminRoute from "./route/admin.route.js"
+
 // import authRoute from "./route/auth.route.js"; // ✅ Ensure this file contains the googleLogin route
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -46,6 +49,9 @@ try {
 // Routes
 app.use("/book/", bookRoute);
 app.use("/user/", userRoute);
+app.use("/cart/", cartRoute);
+app.use("/admin/", adminRoute);
+
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on the server`, 404));
 });

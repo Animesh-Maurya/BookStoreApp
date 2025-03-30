@@ -2,12 +2,14 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import Cards from "./Cards";
 import { AuthContext } from "../context/AuthProvider";
+import Sidebar from "./home/Sidebar";
 
 export default function Course() {
   const [authUser, setAuthUser] = useContext(AuthContext);
   const [books, setBooks] = useState([]);
   const [userBoughtBooks, setUserBoughtBooks] = useState([]);
-  const userId = authUser._id; // Replace with actual user ID
+  const [userCart, setUserCart] = useState([]);
+  const userId = authUser._id; 
 
   useEffect(() => {
     const getBooks = async () => {
@@ -23,21 +25,22 @@ export default function Course() {
       }
     };
 
-    const getUserBoughtBooks = async () => {
+    const getUserBooks = async () => {
       try {
-        const res = await fetch(`http://localhost:4000/book/bought-books/user`, {
+        const res = await fetch(`http://localhost:4000/book/user-books`, {
           method: "GET",
           credentials: "include",
         });
         const data = await res.json();
-        setUserBoughtBooks(data);
+        setUserBoughtBooks(data.boughtBooks);
+        setUserCart(data.cartBooks);
       } catch (error) {
-        console.log("Error fetching bought books:", error);
+        console.log("Error fetching user books:", error);
       }
     };
 
     getBooks();
-    getUserBoughtBooks();
+    getUserBooks();
   }, [userId]);
 
   // Function to remove a book from the displayed list
@@ -45,14 +48,17 @@ export default function Course() {
     setBooks((prevBooks) => prevBooks.filter((book) => book._id !== bookId));
   };
 
-  // Filter books: Remove books that are in userBoughtBooks
+  // Filter out books in `bought_books` and `cart`
   const availableBooks = books.filter(
-    (book) => !(userBoughtBooks || []).some((boughtBook) => boughtBook._id === book._id)
+    (book) =>
+      !userBoughtBooks.some((boughtBook) => boughtBook._id === book._id) &&
+      !userCart.some((cartBook) => cartBook._id === book._id)
   );
 
   return (
     <>
       <div className="max-w-screen-2xl container mx-auto md:px-0 px-1">
+        <Sidebar />
         <div className="mt-20 text-center">
           <h1 className="text-2xl font-semibold md:text-4xl">
             We are delighted to have you <span className="text-pink-500">Here! 😊</span>

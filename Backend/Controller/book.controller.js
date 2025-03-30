@@ -17,29 +17,30 @@ const getBook = async(req,res) => {
 
 const getUserBoughtBooks = async (req, res) => {
   try {
-      // console.log("reques ", req.user);
-      
-      const  userId  = req.user?._id;
-      const user = await User.findById(userId).populate("bought_books").populate("cart");
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      // console.log("reached here in book controller");
+    const userId = req.user?._id;
+    const user = await User.findById(userId)
+      .populate("bought_books")
+      .populate("cart");
 
-      res.status(200).json(user.bought_books);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      boughtBooks: user.bought_books,
+      cartBooks: user.cart,
+    });
   } catch (error) {
-      console.error("Error fetching user bought books:", error);
-      res.status(500).json({ message: "Server error while fetching bought books" });
+    console.error("Error fetching user books:", error);
+    res.status(500).json({ message: "Server error while fetching user books" });
   }
 };
-
 
 
 //admin controllers
 const createBook = async (req, res) => {
     try {
-      console.log("reques.user", req?.admin);
+      // console.log("reques.user", req?.admin);
       
       const { name, price, category, title, author } = req.body;
   

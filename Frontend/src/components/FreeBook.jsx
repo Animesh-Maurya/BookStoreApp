@@ -1,87 +1,75 @@
-import React,{useState,useEffect} from 'react';
+import React, { useState, useEffect } from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
-//import list from "./list.json";
 import Slider from "react-slick";
-import Cards from "./Cards.jsx"
+import Cards from "./Cards.jsx";
 import axios from "axios";
 
 export default function FreeBook() {
+  const [books, setBooks] = useState([]);
 
-  const [book,setBook] = useState([]);
-    useEffect(() =>{
-        const getBook=async()=>{
-            try{
-                const res= await axios.get("http://localhost:4000/book");
-                //console.log(res.data);
-                setBook(res.data);
-            } catch(error){
-                console.log("Error in getting the data from :"+error);
-            }
-        }
-        getBook();
-    },[]);
+  useEffect(() => {
+    const getBooks = async () => {
+      try {
+        const res = await axios.get("http://localhost:4000/book");
+        console.log("API Response:", res.data);
+        setBooks(res.data);
+      } catch (error) {
+        console.log("Error in getting the data:", error);
+      }
+    };
+    getBooks();
+  }, []);
 
-    const filterData=book.filter((data)=> data.category === "Free");
-    console.log(filterData);
-
-    var settings = {
-        dots: true,
-        infinite: false,
-        speed: 500,
-        slidesToShow: 3,
-        slidesToScroll: 3,
-        initialSlide: 0,
-        responsive: [
-          {
-            breakpoint: 1024,
-            settings: {
-              slidesToShow: 3,
-              slidesToScroll: 3,
-              infinite: true,
-              dots: true
-            }
-          },
-          {
-            breakpoint: 600,
-            settings: {
-              slidesToShow: 2,
-              slidesToScroll: 2,
-              initialSlide: 2
-            }
-          },
-          {
-            breakpoint: 480,
-            settings: {
-              slidesToShow: 1,
-              slidesToScroll: 1
-            }
-          }
-        ]
-      };
+  const settings = {
+    dots: true,
+    infinite: true, // Infinite scrolling for a smooth loop
+    speed: 800, // Smoother transition speed
+    slidesToShow: 3,
+    slidesToScroll: 1, // Scroll one book at a time for better control
+    autoplay: true, // Auto-slide
+    autoplaySpeed: 2500, // Speed for auto-sliding
+    cssEase: "cubic-bezier(0.4, 0, 0.2, 1)", // Smooth animation curve
+    swipeToSlide: true, // Allows users to swipe smoothly
+    touchThreshold: 10, // Improves touch responsiveness
+    draggable: true, // Allows drag-to-scroll effect
+    pauseOnHover: true, // Stops autoplay when hovered
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
+  };
 
   return (
-    <>
-     <div className='max-w-screen-2x1 container mx-auto md:px-0 px-1'>
-      <div>
-      <h1 className='font-semibold text-2xl pd-2'>
-           Free Offered Books
-        </h1>
-        <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim  
+    <div className="max-w-screen-2xl container mx-auto px-4 py-6">
+      <div className="text-center mb-6">
+        <h1 className="font-bold text-3xl text-white">📚 Free Offered Books</h1>
+        <p className="text-gray-400 mt-2">
+          Discover amazing books for free! Swipe to explore.
         </p>
       </div>
-     
-     <div>
-     <Slider {...settings}>
-        {filterData.map((item) => ( 
-            <Cards item={item} key={item.id} />
-        ))}
-      </Slider>
+
+      <div className="relative group">
+        <Slider {...settings}>
+          {books.length > 0 ? (
+            books.map((item) => <Cards item={item} key={item._id} />)
+          ) : (
+            <p className="text-center text-white">No free books available.</p>
+          )}
+        </Slider>
+      </div>
     </div>
-     </div>
-    </>
-    
-  )
+  );
 }

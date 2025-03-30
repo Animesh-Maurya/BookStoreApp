@@ -14,7 +14,7 @@ router.post(        //admin-route
     upload.fields([{ name: "image", maxCount: 1 }, { name: "file", maxCount: 1 }]),
     createBook
 );
-router.get("/bought-books/user",isAuthenticated, getUserBoughtBooks);   //user route
+router.get("/user-books",isAuthenticated, getUserBoughtBooks);   //user route
 
 
 export default router;

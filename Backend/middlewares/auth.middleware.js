@@ -6,7 +6,7 @@ import { Admin } from "../model/admin.model.js";
 const secret = "jn4k5n6n5nnn6oi4n";
 
 const isAuthenticated = async (req, res, next) => {
-  console.log("reached here \n");
+//   console.log("reached here \n");
   
     try {
         if (!req.cookies || !req.cookies.token) {
@@ -17,7 +17,7 @@ const isAuthenticated = async (req, res, next) => {
         const decoded = jwt.verify(token, secret);
         
         req.user = await User.findById(decoded._id).select("-password");
-        console.log("reached step 2");
+        // console.log("reached step 2");
 
         if (!req.user) {
             return res.status(401).json({ message: "Invalid token" });

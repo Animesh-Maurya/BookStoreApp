@@ -10,6 +10,8 @@ import Signup from './components/Signup.jsx';
 import Contact from './components/Contact.jsx';
 import Login from './components/Login.jsx';
 import BookForm from './components/Pages/Create_Book.jsx';
+import CART from './components/Courses/CART.jsx';
+import CART1 from './components/Admin/CART1.jsx';
 
 function App() {
   const [authUser, setAuthUser] = useAuth();
@@ -25,6 +27,8 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/create-book" element={<BookForm/>}/>
+        <Route path="/add-to-cart" element={<CART/>}/>
+        <Route path="/admin-cart" element={<CART1/>}/>
       </Routes>
       <Toaster />
     </GoogleOAuthProvider>

@@ -1,47 +1,71 @@
-import mongoose,{Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const adminSchema= Schema({
-    fullname:{
-        type:String,
-        required:true,
-        trim:true,
+const adminSchema = new Schema(
+  {
+    fullname: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    email:{
-        type:String,
-        required:true,
+    email: {
+      type: String,
+      required: true,
     },
-    role:{
-        type:String,
-        required:true,
-        default:"admin"
+    role: {
+      type: String,
+      required: true,
+      default: "admin",
     },
-    password:{
-        type:String,
-        required:true,
+    password: {
+      type: String,
+      required: true,
     },
-    createdBooks:[
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'Book'
-        }
+    createdBooks: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Book",
+      },
     ],
-    //i'll just make a query of it for unpaid books by asking the books which are in createdBooks but not in paid_books
-    paid_books:[
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'Book'
-        }
+    paid_books: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Book",
+      },
     ],
-    customers:[
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        }
+    customers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
     ],
-
-},
-{timestamps: true}
+    
+    // Contact Form Messages
+    contactMessages: [
+      {
+        name: {
+          type: String,
+          required: true,
+        },
+        email: {
+          type: String,
+          required: true,
+        },
+        subject: {
+          type: String,
+          required: true,
+        },
+        message: {
+          type: String,
+          required: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+  },
+  { timestamps: true }
 );
 
-export const Admin=mongoose.model('Admin', adminSchema);
- 
+export const Admin = mongoose.model("Admin", adminSchema);

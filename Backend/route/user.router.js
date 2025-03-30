@@ -1,5 +1,5 @@
 import express from "express";
-import {signup,login, getUserDashboard, googleLogin, header, logoutUser, AdminLogin, addToCart} from "../Controller/user.controller.js"; //if we are using the named export instead of the default export then we have to use {} fro the that
+import {signup,login, getUserDashboard, googleLogin, header, logoutUser, AdminLogin, addToCart, getBoughtBooks} from "../Controller/user.controller.js"; //if we are using the named export instead of the default export then we have to use {} fro the that
 import { getAdminDashboard } from "../Controller/admin.controller.js";
 import { isAuthenticated } from "../middlewares/auth.middleware.js";
 
@@ -20,5 +20,6 @@ router.get('/dashboard', isAuthenticated, async (req, res) => {
     await getUserDashboard(req, res);
   }
 });
+router.get("/bought-books/:userId", getBoughtBooks);
 
 export default router;

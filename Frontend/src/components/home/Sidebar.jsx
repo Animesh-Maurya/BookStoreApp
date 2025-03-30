@@ -143,9 +143,11 @@ function Sidebar() {
           <li style={listItemStyle}>
             <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
           </li>
-          <li style={listItemStyle}>
-            <Link to="/completed-task" style={linkStyle}>Completed Tasks</Link>
-          </li>
+         { authUser?.role==='user' ? (<li style={listItemStyle}>
+            <Link to="/add-to-cart" style={linkStyle}>Your 🛒🛒</Link>
+          </li>) : (<li style={listItemStyle}>
+            <Link to="/admin-cart" style={linkStyle}>Admin 🛒🛒🛒🛒</Link>
+          </li>)}
           <li style={listItemStyle}>
             <Link to={`/login/profile/${authUser?.id}`} style={linkStyle}>Profile</Link>
           </li>

@@ -3,10 +3,18 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 export const AuthContext = createContext();
 
 export default function AuthProvider({ children }) {
-  const initialAuthUser = localStorage.getItem("Users");
-  const [authUser, setAuthUser] = useState(initialAuthUser ? JSON.parse(initialAuthUser) : null);
+  // Safe initialization of authUser
+  const initialAuthUser = typeof window !== "undefined" ? localStorage.getItem("Users") : null;
+  const [authUser, setAuthUser] = useState(() => {
+    try {
+      return initialAuthUser ? JSON.parse(initialAuthUser) : null;
+    } catch (error) {
+      console.error("Error parsing auth user from localStorage:", error);
+      return null;
+    }
+  });
 
-  // Whenever authUser changes, update localStorage
+  // Update localStorage whenever authUser changes
   useEffect(() => {
     if (authUser) {
       localStorage.setItem("Users", JSON.stringify(authUser));
@@ -22,4 +30,11 @@ export default function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+// Custom hook for using Auth context safely
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

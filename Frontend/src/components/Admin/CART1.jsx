@@ -1,15 +1,15 @@
 import React from 'react'
 import Navbar from '../Navbar'
 import Footer from '../Footer'
-import Course from '../Course'
+import Cart from './Cart'
 
-export default function Courses() {
+export default function CART1() {
 
   return (
     <>
         <Navbar />
         <div className='min-h-screen'>
-            <Course />
+            <Cart />
         </div>
         <Footer />
     </>

@@ -238,7 +238,7 @@ const getUserDashboard = async (req, res) => {
 
 const addToCart = async (req, res) => {
   try {
-    console.log("req.body ", req?.body);
+    // console.log("req.body ", req?.body);
     
     const { userId, bookId } = req.body;
 
@@ -266,6 +266,23 @@ const addToCart = async (req, res) => {
   }
 };
 
+const getBoughtBooks = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Find user and populate bought_books
+    const user = await User.findById(userId).populate("bought_books");
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, books: user.bought_books });
+  } catch (error) {
+    console.error("Error fetching bought books:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 
 
 export {login,
@@ -275,5 +292,6 @@ export {login,
     getUserDashboard,
     googleLogin,
     AdminLogin,
-    addToCart
+    addToCart,
+    getBoughtBooks
 }
