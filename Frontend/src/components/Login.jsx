@@ -1,3 +1,4 @@
+
 import React, { useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from "react-hook-form";
@@ -88,6 +89,34 @@ function Login() {
     }
   };
 
+    const onAdminSubmit = async (data) => {
+    try {
+      const res = await fetch("http://localhost:4000/user/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+      });
+
+      const responseData = await res.json();
+      if (!res.ok) {
+        throw new Error(responseData.message || "Admin login failed");
+      }
+
+      toast.success("Admin Logged in Successfully");
+      setAuthUser(responseData.admin);
+      localStorage.setItem("Admin", JSON.stringify(responseData.admin));
+      document.getElementById('my_modal_3').close();
+      navigate('/');
+    } catch (error) {
+      console.error("Admin login error:", error);
+      toast.error("Error: " + error.message);
+    }
+  };
+
   return (
     <div>
       <dialog id="my_modal_3" className="modal">
@@ -126,6 +155,8 @@ function Login() {
                   alt="Google" className="w-5 h-5 inline-block mr-2" />
                 Login with Google
               </button>
+              <button type="button" className="btn btn-primary w-80" onClick={handleSubmit(onAdminSubmit)}>Admin Login</button>
+
               <p>Not Registered? <Link to="/signup" className="underline text-blue-500 cursor-pointer">Signup</Link></p>
             </div>
           </form>

@@ -1,49 +1,84 @@
-import React,{useState,useEffect} from 'react'
-// import list from './list.json' it is used when we are taking the data from the frontend
-import Cards from './Cards';
-import axios from "axios";
-import {Link} from 'react-router-dom'
+import React, { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
+import Cards from "./Cards";
+import { AuthContext } from "../context/AuthProvider";
+
 export default function Course() {
-    // console.log(list);
-    const [book,setBook] = useState([]);
-    useEffect(() =>{
-        const getBook=async()=>{
-            try{
-                const res= await axios.get("http://localhost:4000/book");
-                console.log(res.data);
-                setBook(res.data);
-            } catch(error){
-                console.log("Error in getting the data from :"+error);
-            }
-        }
-        getBook();
-    },[]);
+  const [authUser, setAuthUser] = useContext(AuthContext);
+  const [books, setBooks] = useState([]);
+  const [userBoughtBooks, setUserBoughtBooks] = useState([]);
+  const userId = authUser._id; // Replace with actual user ID
+
+  useEffect(() => {
+    const getBooks = async () => {
+      try {
+        const res = await fetch("http://localhost:4000/book", {
+          method: "GET",
+          credentials: "include",
+        });
+        const data = await res.json();
+        setBooks(data);
+      } catch (error) {
+        console.log("Error in getting books:", error);
+      }
+    };
+
+    const getUserBoughtBooks = async () => {
+      try {
+        const res = await fetch(`http://localhost:4000/book/bought-books/user`, {
+          method: "GET",
+          credentials: "include",
+        });
+        const data = await res.json();
+        setUserBoughtBooks(data);
+      } catch (error) {
+        console.log("Error fetching bought books:", error);
+      }
+    };
+
+    getBooks();
+    getUserBoughtBooks();
+  }, [userId]);
+
+  // Function to remove a book from the displayed list
+  const handleRemoveBook = (bookId) => {
+    setBooks((prevBooks) => prevBooks.filter((book) => book._id !== bookId));
+  };
+
+  // Filter books: Remove books that are in userBoughtBooks
+  const availableBooks = books.filter(
+    (book) => !(userBoughtBooks || []).some((boughtBook) => boughtBook._id === book._id)
+  );
 
   return (
     <>
-        <div className='max-w-screen-2x1 container mx-auto md:px-0 px-1'>
-            <div className='mt-20 items-center-justify-center text-center'>
-                <h1 className='text-2xl font-semibold md:text-4xl'>
-                    We are delight to have you <span className='text-pink-500'> Here! :</span>
-                </h1>
-                <p className='mt-12'>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor 
-                incididunt ut labore et dolore magna aliqua. 
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-                </p>
-                 <Link to='/'> {/*we had taken link from react-router-dom */}
-                <button className="btn btn-secondary mt-6" >Back</button>
-                </Link>
-                
-            </div>
-            <div className='mt-12 grid grid-cols-1 md:grid-cols-4'>
-                {
-                    book.map((item) => (
-                        <Cards item={item} key={item.id}/>
-                    ))
-                }
-            </div>
+      <div className="max-w-screen-2xl container mx-auto md:px-0 px-1">
+        <div className="mt-20 text-center">
+          <h1 className="text-2xl font-semibold md:text-4xl">
+            We are delighted to have you <span className="text-pink-500">Here! 😊</span>
+          </h1>
+          <p className="mt-6 text-gray-600 text-lg">
+            Explore our vast collection of books. Find what interests you the most and start learning today! 📖
+          </p>
+          <Link to="/">
+            <button className="mt-6 px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition-all">
+              🔙 Back
+            </button>
+          </Link>
         </div>
+
+        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {availableBooks.length > 0 ? (
+            availableBooks.map((item) => (
+              <Cards userId={userId} item={item} key={item._id} onRemove={handleRemoveBook} />
+            ))
+          ) : (
+            <p className="text-center col-span-full text-gray-500 text-lg">
+              No books available at the moment. 📚
+            </p>
+          )}
+        </div>
+      </div>
     </>
-  )
+  );
 }

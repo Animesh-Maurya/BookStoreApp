@@ -26,6 +26,16 @@ app.use(express.static("public"));
 const PORT = process.env.PORT || 4001;
 const URI = process.env.MONGODBURI;
 
+
+class AppError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+        this.statusCode = statusCode;
+        this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
+        this.isOperational = true; // Marks it as a known, expected error
+    }
+}
+
 try {
     mongoose.connect(URI);
     console.log("Database connected ...");

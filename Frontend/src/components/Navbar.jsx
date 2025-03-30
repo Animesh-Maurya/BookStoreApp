@@ -6,25 +6,9 @@ import { Link } from "react-router-dom";
 
 export default function Navbar() {
   const [authUser, setAuthUser] = useAuth();
+  console.log("auth user:  ", authUser);
+  
   console.log("Auth User:", authUser); // Debugging user status
-
-  // Fetch user info once when the component mounts
-  useEffect(() => {
-    fetch("http://localhost:4000/user/header", {
-      method: "GET",
-      credentials: "include",  // ✅ Required to send cookies
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to fetch user data");
-        return response.json();
-      })
-      .then((data) => {
-        if (data && Object.keys(data).length > 0) {
-          setAuthUser(data);
-        }
-      })
-      .catch((error) => console.error("Error fetching user info:", error));
-  }, []); // ✅ Runs only once when component mounts
 
   // Theme Handling
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
@@ -55,9 +39,13 @@ export default function Navbar() {
       <li>
         <Link to="/">Home</Link>
       </li>
-      <li>
+      {authUser?.role == "user" ?(<li>
         <Link to="/courses">Course</Link>
-      </li>
+      </li>) : (
+        <li>
+          <Link to ="/admin-course">My_Courses</Link>
+        </li>
+      )}
       <li>
         <Link to="/contact">Contact</Link>
       </li>

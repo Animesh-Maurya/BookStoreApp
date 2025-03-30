@@ -5,6 +5,8 @@ import oauth2Client from "../utils/googleConfig.js";
 import cookieParser from "cookie-parser";
 import axios from 'axios'
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { Admin } from "../model/admin.model.js";
+import { Book } from "../model/book.model.js";
 
 const salt = bcrypt.genSaltSync(10);
 const secret = "jn4k5n6n5nnn6oi4n";
@@ -33,7 +35,7 @@ const signup = async (req, res) => {
     const token = jwt.sign(
       { _id: createUser._id, email },
       secret,
-      { expiresIn: "1h" }
+      { expiresIn: "5h" }
     );
 
     // ✅ Set token as HTTP-only cookie
@@ -50,6 +52,7 @@ const signup = async (req, res) => {
         _id: createUser._id,
         fullname: createUser.fullname,
         email: createUser.email,
+        role:"user"
       },
       token, // ✅ Sending token in response as well (optional)
     });
@@ -72,37 +75,39 @@ const header = asyncHandler(async (req, res) => {
 //login
 const login = async (req, res) => {
     try {
+      console.log("reached here");
+      
         const { email, password } = req.body;
+        console.log("reached here 2");
 
         // Check if user exists
-        const user = await User.findOne({ email });
+        let user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: "Invalid email or password" });
+            return res.status(400).json({message: "user not found "});
         }
-
+        console.log("reached here 3 ", user);
+        
         // Compare password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: "Invalid email or password" });
         }
-
+        console.log("reached here 4");
         // Generate JWT token
-        const token = jwt.sign({ _id: user._id }, secret, { expiresIn: "1h" });
+        const token = jwt.sign({ _id: user._id }, secret, { expiresIn: "9h" });
 
         // ✅ Set token as HTTP-only cookie
         res.cookie("token", token, {
             httpOnly: true, // 🔥 Prevents XSS attacks
             secure: false,
         });
-        console.log(res.cookies);
-        
-
         return res.status(200).json({
             message: "Login successful",
             user: {
                 _id: user._id,
                 fullname: user.fullname,
                 email: user.email, // ✅ Keeping email for reference
+                role:"user",
             },
             token, // ✅ Sending token for frontend use (optional)
         });
@@ -112,6 +117,37 @@ const login = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+const AdminLogin= asyncHandler( async ( req,res) => {
+  try{
+    const {email, password} = req.body;
+
+    let user= await Admin.findOne({email});
+    if( !user){
+      return res.status(400).json({message: "user not found "});
+    }
+
+    const token= jwt.sign({_id: user._id}, secret, {expiresIn: "7d"});
+
+    res.cookie("token", token, {
+      httpOnly:true,
+      secure:false,
+    });
+    res.status(200).json({
+      message:"Login successful",
+      admin:{
+        _id:user._id,
+        fullname:user.fullname,
+        email: user.email,
+        role:"admin",
+      },
+      token,
+    });
+  } catch(error) {
+    console.error(" Error in logging the user: ", error.message);
+    res.status(500).json({message: "internal server error"});
+  }
+});
 
 const logoutUser = asyncHandler(async (req, res) => {
     try {
@@ -128,7 +164,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     }
   });
 
-  const googleLogin = async (req, res) => {
+const googleLogin = async (req, res) => {
     try {
       const { code } = req.query;
       if (!code) {
@@ -170,6 +206,7 @@ const logoutUser = asyncHandler(async (req, res) => {
           _id: user._id,
           fullname: user.fullname,
           email: user.email,
+          role:"user"
         },
         token, // Optionally sent for frontend use
       });
@@ -199,11 +236,44 @@ const getUserDashboard = async (req, res) => {
   }
 };
 
+const addToCart = async (req, res) => {
+  try {
+    console.log("req.body ", req?.body);
+    
+    const { userId, bookId } = req.body;
+
+    if (!userId || !bookId) {
+      return res.status(400).json({ message: "User ID and Book ID are required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if book already exists in cart
+    if (user.cart.includes(bookId)) {
+      return res.status(400).json({ message: "Book already in cart" });
+    }
+
+    user.cart.push(bookId);
+    await user.save();
+
+    res.status(200).json({ message: "Book added to cart", cart: user.cart });
+  } catch (error) {
+    console.error("Error adding book to cart:", error);
+    res.status(500).json({ message: "Server error while adding book to cart" });
+  }
+};
+
+
 
 export {login,
     logoutUser,
     header,
     signup,
     getUserDashboard,
-    googleLogin
+    googleLogin,
+    AdminLogin,
+    addToCart
 }

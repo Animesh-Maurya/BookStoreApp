@@ -13,6 +13,7 @@ const adminSchema= Schema({
     role:{
         type:String,
         required:true,
+        default:"admin"
     },
     password:{
         type:String,

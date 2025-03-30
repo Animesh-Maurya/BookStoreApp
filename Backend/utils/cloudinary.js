@@ -20,9 +20,9 @@ console.log("Cloudinary Configuration:", {
  * @returns {Array<object>} - Array of Cloudinary response objects or an empty array if no files are uploaded.
  */
 const uploadMultipleFiles = async (filePaths) => {
-  const allowedFileTypes = ['.pdf', '.doc', '.docx', '.zip'];
+  const allowedFileTypes = ['.pdf', '.doc', '.docx', '.zip','.jpg', '.jpeg','.png','.gif','.webp'];
   const uploadedFiles = [];
-
+  
   for (const filePath of filePaths) {
     try {
         console.log("Processing file:", filePath);

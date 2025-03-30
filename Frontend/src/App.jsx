@@ -9,10 +9,12 @@ import Courses from './components/Courses/Courses.jsx';
 import Signup from './components/Signup.jsx';
 import Contact from './components/Contact.jsx';
 import Login from './components/Login.jsx';
+import BookForm from './components/Pages/Create_Book.jsx';
 
 function App() {
-  const [authUser] = useAuth();
-
+  const [authUser, setAuthUser] = useAuth();
+  // console.log("auth User at app.jsx ", authUser);
+  
   return (
     <AuthProvider>
     <GoogleOAuthProvider clientId="576465356327-501k2vs4bv48ibc54f4c4519j8gitj9g.apps.googleusercontent.com">
@@ -22,6 +24,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/create-book" element={<BookForm/>}/>
       </Routes>
       <Toaster />
     </GoogleOAuthProvider>
