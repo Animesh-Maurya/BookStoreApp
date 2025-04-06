@@ -25,12 +25,6 @@ const userSchema = new Schema({
             ref: "Book",
         },
     ],
-    pending_books:[
-        {
-            type:Schema.Types.ObjectId,
-            ref:"Book"
-        }
-    ],
     favourites:[
         {
             type:Schema.Types.ObjectId,
