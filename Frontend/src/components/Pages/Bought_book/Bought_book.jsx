@@ -1,39 +1,57 @@
-// BoughtBooks.jsx
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Card2 from "./Bought_card";
+import { AuthContext } from "../../../context/AuthProvider";
+import Sidebar from "../../home/Sidebar";
 
 export default function BoughtBooks({ userId }) {
+  const [authUser] = useContext(AuthContext);
   const [books, setBooks] = useState([]);
+  const [favourites, setFavourites] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBoughtBooks = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/user/${userId}/bought-books`);
-        const data = await response.json();
-        if (response.ok) {
-          setBooks(data.boughtBooks);
+        const boughtRes = await fetch(`http://localhost:4000/user/bought-books/${authUser._id}`);
+        const boughtData = await boughtRes.json();
+
+        const favRes = await fetch(`http://localhost:4000/user/favourites/${authUser._id}`);
+        const favData = await favRes.json();
+
+        if (boughtRes.ok && favRes.ok) {
+          setBooks(boughtData.books);
+          setFavourites(favData.favourites.map(book => book._id));
         } else {
-          console.error("Failed to fetch bought books:", data.message);
+          console.error("Error fetching data");
         }
-      } catch (error) {
-        console.error("Error fetching bought books:", error);
+      } catch (err) {
+        console.error("Fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBoughtBooks();
+    fetchData();
   }, [userId]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p className="text-center text-lg mt-10">Loading...</p>;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "1rem" }}>
+    <div className="bg-blue-950 text-white min-h-screen p-6">
+      <Sidebar />
       {books.length > 0 ? (
-        books.map((book) => <Card2 key={book._id} item={book} isBought={true} />)
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+          {books.map((book) => (
+            <Card2
+              key={book._id}
+              item={book}
+              isBought={true}
+              isFavorited={favourites.includes(book._id)}
+            />
+          ))}
+        </div>
       ) : (
-        <p>No books bought yet.</p>
+        <p className="text-center text-gray-300 text-xl mt-10">No books bought yet.</p>
       )}
     </div>
   );

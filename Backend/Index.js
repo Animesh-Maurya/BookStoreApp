@@ -2,7 +2,6 @@
 import dotenv from "dotenv";
 dotenv.config({ path: './.env'});
 import express from "express";
-
 import mongoose from "mongoose";
 import bookRoute from "./route/book.route.js";
 import userRoute from "./route/user.router.js";
@@ -12,6 +11,9 @@ import adminRoute from "./route/admin.route.js"
 // import authRoute from "./route/auth.route.js"; // ✅ Ensure this file contains the googleLogin route
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET);
+
 // Initialize Express
 const app = express();
 
@@ -45,6 +47,38 @@ try {
 } catch (error) {
     console.log("Error connecting to the database:", error);
 }
+
+app.post("/create-checkout-session", async (req, res) => {
+  try {
+    const { products } = req.body;
+
+    const lineItems = products.map((product) => ({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: product.name,
+          images: [product.image?.url], // assuming image is an object with url
+        },
+        unit_amount: Math.round(product.price * 100),
+      },
+      quantity: 1,
+    }));
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: lineItems,
+      mode: "payment",
+      success_url: "http://localhost:5173/success",
+      cancel_url: "http://localhost:5173/cancel",
+    });
+
+    res.json({ id: session.id });
+  } catch (err) {
+    console.error("Stripe error:", err);
+    res.status(500).json({ error: "Failed to create Stripe session" });
+  }
+});
+
 
 // Routes
 app.use("/book/", bookRoute);

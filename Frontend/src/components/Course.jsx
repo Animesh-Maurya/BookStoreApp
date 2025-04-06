@@ -51,8 +51,8 @@ export default function Course() {
   // Filter out books in `bought_books` and `cart`
   const availableBooks = books.filter(
     (book) =>
-      !userBoughtBooks.some((boughtBook) => boughtBook._id === book._id) &&
-      !userCart.some((cartBook) => cartBook._id === book._id)
+      !userBoughtBooks?.some((boughtBook) => boughtBook._id === book._id) &&
+      !userCart?.some((cartBook) => cartBook._id === book._id)
   );
 
   return (

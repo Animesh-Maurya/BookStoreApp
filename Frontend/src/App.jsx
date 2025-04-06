@@ -12,6 +12,10 @@ import Login from './components/Login.jsx';
 import BookForm from './components/Pages/Create_Book.jsx';
 import CART from './components/Courses/CART.jsx';
 import CART1 from './components/Admin/CART1.jsx';
+import BOUGHT from './components/Pages/Bought_book/BOUGHT.JSX';
+import PDFReader from './components/Pages/Bought_book/PDFReader.jsx';
+import Success from './components/Success.jsx';
+import Cancel from './components/Cancel.jsx';
 
 function App() {
   const [authUser, setAuthUser] = useAuth();
@@ -29,6 +33,10 @@ function App() {
         <Route path="/create-book" element={<BookForm/>}/>
         <Route path="/add-to-cart" element={<CART/>}/>
         <Route path="/admin-cart" element={<CART1/>}/>
+        <Route path="/bought-book" element={<BOUGHT/>}/>
+        <Route path="/read-book" element={<PDFReader />} />
+        <Route path="/success" element={<Success/>} />
+        <Route path="/cancel" element={<Cancel />} />
       </Routes>
       <Toaster />
     </GoogleOAuthProvider>
