@@ -66,12 +66,14 @@ export default function ProfilePage() {
           </ul>
         </div>
 
-        {/* Profile Main */}
+        {/* Profile Main */
+         console.log("userData profile ->", userData.profilePic)
+        }
         <div className="flex-1 p-10 flex flex-col justify-center">
           <div className="flex items-center space-x-6 bg-black bg-opacity-30 p-6 rounded-2xl shadow-lg">
-            {userData.image ? (
+            {userData.profilePic ? (
               <img
-                src={userData.image}
+                src={userData.profilePic}
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border-4 border-gray-600 shadow-md"
               />

@@ -2,10 +2,10 @@ import express from "express";
 import {signup,login, getUserDashboard, googleLogin, header, logoutUser, AdminLogin, addToCart, getBoughtBooks, addToFavourites, getFavourites, removeFromCart, completePayment, getUserById, getFavorites, removeFavorite} from "../Controller/user.controller.js"; //if we are using the named export instead of the default export then we have to use {} fro the that
 import { getAdminDashboard } from "../Controller/admin.controller.js";
 import { isAuthenticated } from "../middlewares/auth.middleware.js";
-
+import { upload } from "../middlewares/multer.middleware.js";
 const router=express.Router();
 
-router.post("/signup",signup);
+router.route("/signup").post(upload.single("profilePic"),signup);
 router.post("/login",login);
 router.get("/google", googleLogin);
 router.route("/admin/login").post( AdminLogin);

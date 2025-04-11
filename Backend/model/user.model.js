@@ -5,9 +5,6 @@ const userSchema = new Schema({
         type: String,
         required: true, // ✅ Fixed `require` to `required`
     },
-    image:{
-        type:String,
-    },
     email: {
         type: String,
         required: true,
@@ -21,6 +18,14 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: true,
+    },
+    profilePic:{
+            type: String,
+            require:false,
+        },
+    location:{
+        type: String,
+        require: true,
     },
     cart: [
         {
