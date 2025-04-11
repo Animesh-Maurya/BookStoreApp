@@ -5,6 +5,9 @@ const userSchema = new Schema({
         type: String,
         required: true, // ✅ Fixed `require` to `required`
     },
+    image:{
+        type:String,
+    },
     email: {
         type: String,
         required: true,
@@ -25,7 +28,7 @@ const userSchema = new Schema({
             ref: "Book",
         },
     ],
-    pending_books:[
+    favourites:[
         {
             type:Schema.Types.ObjectId,
             ref:"Book"

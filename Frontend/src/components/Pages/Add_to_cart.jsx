@@ -3,39 +3,70 @@ import Cards from "./Cart_card.jsx";
 import { AuthContext } from "../../context/AuthProvider.jsx";
 import Sidebar from "../home/Sidebar.jsx";
 
+// ...imports
+import { loadStripe } from "@stripe/stripe-js";
+
 export default function Cart() {
   const [authUser] = useContext(AuthContext);
   const [cartItems, setCartItems] = useState([]);
-  const [pendingBooks, setPendingBooks] = useState([]);
   const userId = authUser._id;
+  const apiURL = "http://localhost:4000";
 
   useEffect(() => {
-    const fetchCartAndPendingBooks = async () => {
+    const fetchCart = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/cart/${userId}`);
+        const response = await fetch(`${apiURL}/cart/${userId}`);
         const data = await response.json();
-        
+
         if (response.ok) {
           setCartItems(data.cart);
-          setPendingBooks(data.pending_books);
         } else {
-          console.error("Failed to fetch cart and pending books:", data.message);
+          console.error("Failed to fetch cart:", data.message);
         }
       } catch (error) {
-        console.error("Error fetching cart and pending books:", error);
+        console.error("Error fetching cart:", error);
       }
     };
 
-    fetchCartAndPendingBooks();
+    fetchCart();
   }, [userId]);
 
-  const removeFromCart = (bookId) => {
-    setCartItems(cartItems.filter(item => item._id !== bookId));
+  const tAmount = cartItems.reduce((sum, item) => sum + item.price, 0);
+
+  const makePayment = async () => {
+    const stripe = await loadStripe("pk_test_51RAt7GH9TSzSmX1tmnaF5JRcbJ2pgMFFWaQ2VZHpyPNitX96jJO0nqtzpM8b010dm1MZrvjMjbvg5yjYhBgzOpPI00iRunFLQx");
+
+    const body = { products: cartItems };
+    const headers = { "Content-Type": "application/json" };
+
+    const response = await fetch(`${apiURL}/create-checkout-session`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const session = await response.json();
+
+    const result = await stripe.redirectToCheckout({
+      sessionId: session.id,
+    });
+
+    if (result.error) {
+      console.error(result.error.message);
+    } else {
+      // After success, call the endpoint to update user
+      await fetch(`${apiURL}/user/complete-payment`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ userId, bookIds: cartItems.map(item => item._id) }),
+      });
+
+      setCartItems([]); // Clear cart
+    }
   };
 
-  // Mark a book as pending locally
-  const markAsPending = (bookId) => {
-    setPendingBooks((prevPending) => [...prevPending, { _id: bookId }]);
+  const removeFromCart = (bookId) => {
+    setCartItems(cartItems.filter((item) => item._id !== bookId));
   };
 
   return (
@@ -45,19 +76,21 @@ export default function Cart() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px" }}>
         {cartItems.length > 0 ? (
           cartItems.map((item) => (
-            <Cards 
-              key={item._id} 
-              item={item} 
-              userId={userId} 
-              onRemove={removeFromCart} 
-              isPending={pendingBooks.some(book => book._id === item._id)} 
-              markAsPending={markAsPending} // Pass function to mark as pending
-            />
+            <Cards key={item._id} item={item} userId={userId} onRemove={removeFromCart} />
           ))
         ) : (
           <p style={{ textAlign: "center", fontSize: "18px", color: "#AAAAAA" }}>Your cart is empty.</p>
         )}
       </div>
+
+      {cartItems.length > 0 && (
+        <button
+          onClick={makePayment}
+          className={`text-white ${tAmount === 0 ? "bg-gray-400" : "bg-primary"} p-2 rounded-sm w-full`}
+        >
+          Pay ${tAmount.toFixed(2)}
+        </button>
+      )}
     </div>
   );
 }

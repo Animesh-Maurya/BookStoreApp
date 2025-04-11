@@ -1,5 +1,5 @@
 import express from "express";
-import {createBook, getBook, getUserBoughtBooks} from "../Controller/book.controller.js";
+import {createBook, getBook, getBookById, getUserBoughtBooks} from "../Controller/book.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { isAdminAuthenticated, isAuthenticated } from "../middlewares/auth.middleware.js";
 
@@ -15,6 +15,8 @@ router.post(        //admin-route
     createBook
 );
 router.get("/user-books",isAuthenticated, getUserBoughtBooks);   //user route
+router.get("/:id", getBookById);
+
 
 
 export default router;

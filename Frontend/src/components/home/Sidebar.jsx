@@ -175,7 +175,7 @@ function Sidebar() {
           {showSubMenu && (
             <ul className="submenu" style={{ ...submenuStyle, listStyle: 'none', padding: 0, margin: 0 }}>
               <li style={listItemStyle}>
-                <Link to="/assignments" style={linkStyle}>Assignments</Link>
+                <Link to="/bought-book" style={linkStyle}>Bought Already</Link>
               </li>
               <li style={listItemStyle}>
                 <Link to="/all-projects" style={linkStyle}>Projects</Link>

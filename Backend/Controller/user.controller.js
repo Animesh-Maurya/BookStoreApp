@@ -7,6 +7,7 @@ import axios from 'axios'
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Admin } from "../model/admin.model.js";
 import { Book } from "../model/book.model.js";
+import mongoose from "mongoose";
 
 const salt = bcrypt.genSaltSync(10);
 const secret = "jn4k5n6n5nnn6oi4n";
@@ -285,6 +286,143 @@ const getBoughtBooks = async (req, res) => {
 };
 
 
+const addToFavourites = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { bookId } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.favourites.includes(bookId)) {
+      return res.status(400).json({ message: "Book already in favourites" });
+    }
+
+    user.favourites.push(bookId);
+    await user.save();
+
+    return res.status(200).json({ message: "Book added to favourites" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getFavourites = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId).populate("favourites");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ favourites: user.favourites });
+  } catch (error) {
+    res.status(500).json({ message: "Server error fetching favourites" });
+  }
+};
+
+ const removeFromCart = async (req, res) => {
+  const { userId } = req.params;
+  const { bookId } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(bookId)) {
+    return res.status(400).json({ message: "Invalid user or book ID" });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.cart = user.cart.filter(id => id.toString() !== bookId);
+    await user.save();
+
+    return res.status(200).json({ message: "Book removed from cart" });
+  } catch (err) {
+    console.error("Error removing from cart:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const completePayment = async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const user = await User.findById(userId).populate("cart");
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const bookIds = user.cart.map(book => book._id.toString());
+
+    user.bought_books.push(...bookIds.filter(id => !user.bought_books.includes(id)));
+    user.cart = [];
+
+    await user.save();
+    res.status(200).json({ message: "Payment complete. Cart updated." });
+
+  } catch (error) {
+    console.error("Error updating user after payment:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId)
+      .populate("favourites", "name image")
+      .populate("bought_books", "name image")
+      .select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found!" });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+const getFavorites = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId).populate("favourites");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ favourites: user.favourites });
+  } catch (err) {
+    console.error("Error fetching favorites:", err);
+    res.status(500).json({ message: "Server error fetching favorites" });
+  }
+};
+
+const removeFavorite = async (req, res) => {
+  const { userId, bookId } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.favourites = user.favourites.filter(
+      (favId) => favId.toString() !== bookId
+    );
+
+    await user.save();
+
+    res.status(200).json({ message: "Book removed from favorites" });
+  } catch (error) {
+    console.error("Error removing favorite:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 export {login,
     logoutUser,
     header,
@@ -293,5 +431,12 @@ export {login,
     googleLogin,
     AdminLogin,
     addToCart,
-    getBoughtBooks
+    getBoughtBooks,
+    addToFavourites,
+    getFavourites,
+    removeFromCart,
+    completePayment,
+    getUserById,
+    getFavorites,
+    removeFavorite
 }
