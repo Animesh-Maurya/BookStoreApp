@@ -16,7 +16,7 @@ import { ChatState } from '../../context/ChatProvider';
 function Sidebar() {
 
     const {selectedGroup,setSelectedGroup,group,setGroup} = ChatState();
-    
+
     const [loading, setLoading] = useState(false);
     const [loadingChat,setLoadingChat] = useState(false);
     const [search, setSearch] = useState("");
@@ -40,12 +40,19 @@ function Sidebar() {
       credentials: "include",
       body: JSON.stringify({ bookId }),
     });
+    
+
     const data = await response.json(); // <-- add this line
+    setLoading(false);
+    toggleDrawer(false)(); 
     console.log("Here I am printing the group data->", data);
-    // if (!group.find((g) => g._id === data._id)) setGroup([data, ...group]);
+    if (!group.find((g) => g._id === data._id)) setGroup([data, ...group]);
+
+    setSelectedGroup(data);
+
   } catch (error) {
     toast.error("Error in fetching the chat");
-    console.error(error);
+    console.log(error);
   }
 };
 
@@ -80,7 +87,7 @@ function Sidebar() {
     <Box sx={{ width: 250 }} role="presentation" open={drawerOpen}>
       <List>
         <ListItem>
-          Search User
+          Search Groups
         </ListItem>
         <Box sx={{
           display:"flex",
@@ -130,7 +137,7 @@ function Sidebar() {
         <Tooltip title="Search User" arrow>
     <Button variant="ghost" display="flex" alignItems="center" onClick={toggleDrawer(true)}>
       <i className="fas fa-search" style={{ marginRight: "8px" }}></i>
-      <p>Search User</p>
+      <p>Search Groups</p>
     </Button>
   </Tooltip>
   <div>

@@ -27,6 +27,7 @@ const chatModel=mongoose.Schema(
         },
         book:{
             type:mongoose.Schema.Types.ObjectId,
+            ref:"Book",
             require: true,
         },
         createdAt: {

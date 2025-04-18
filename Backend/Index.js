@@ -8,6 +8,7 @@ import userRoute from "./route/user.router.js";
 import cartRoute from "./route/routes.cart.js";
 import adminRoute from "./route/admin.route.js"
 import chatRoutes from "./route/chatRoutes.js";
+import adminChatRoute from "./route/adminChatRoute.js";
 // import authRoute from "./route/auth.route.js"; // ✅ Ensure this file contains the googleLogin route
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -86,6 +87,7 @@ app.use("/user/", userRoute);
 app.use("/cart/", cartRoute);
 app.use("/admin/", adminRoute);
 app.use("/chat/user/",chatRoutes);
+app.use("/chat/admin/",adminChatRoute);
 
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on the server`, 404));

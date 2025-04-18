@@ -4,90 +4,87 @@ import { Book } from "../model/book.model.js";
 import { User } from "../model/user.model.js";
 import { Admin } from "../model/admin.model.js";
 
-const accessChat = asyncHandler(async(req,res)=>{
-    const { bookId } = req.body; 
-    console.log("BookId->",bookId);
+const accessChat = asyncHandler(async (req, res) => {
+  const { bookId } = req.body;
+  const userId = req.user._id;
+  const location = req.user.location;
 
-    if(!bookId){
-        console.log("Book Id is not found");
-        return res.sendStatus(400);
-    }
+  if (!bookId) {
+    console.log("Book Id is not provided");
+    return res.sendStatus(400);
+  }
 
-    // now you have to do that the given book id matched with 
-    // given book id
-    var isChat = await Chat.find({
-        location: req.user.location,
-        book: bookId,
-        pendingUsers:{$eleMatch: {$eq: req.user._id}},
-    })
-    .populate("pendingUsers","-password");
-    
-    if(isChat){
-        console.log("This User is in the pending");
-        res.send(isChat);
-    }
+  // 1️⃣  Is the user already in pendingUsers?
+  let chat = await Chat.findOne({
+    location,
+    book: bookId,
+    pendingUsers: userId,
+  })
+    .populate("pendingUsers", "-password")
+    .populate("groupAdmin", "-password");
 
-    isChat = await Chat.find({
-        location:req.user.location,
-        book: bookId,
-        users:{$elematch: {$eq: req.user._id}},
-    })
-    .populate("users","-password")
+  if (chat) {
+    console.log("User is already pending in this chat");
+    return res.status(200).json(chat);
+  }
+
+  // 2️⃣  Is the user already in users?
+  chat = await Chat.findOne({
+    location,
+    book: bookId,
+    users: userId,
+  })
+    .populate("users", "-password")
     .populate("latestMessage")
+    .populate("groupAdmin", "-password");
 
-    isChat = await User.populate(isChat,{
-        path:"latestMessage.sender",
-        select: "fullName profilePic email",
-    })
-    if(isChat){
-        console.log("There is previous chat");
-        res.send(isChat);
-    }else{
+  if (chat) {
+    // also populate the sender of latestMessage
+    chat = await User.populate(chat, {
+      path: "latestMessage.sender",
+      select: "fullName profilePic email",
+    });
+    console.log("User is already in users for this chat");
+    return res.status(200).json(chat);
+  }
 
-        try{
-            let isChat = await Chat.findOne({
-            location: req.user.location,
-            book: bookId,
-            });
+  // 3️⃣  Does a chat for this book/location exist at all?
+  chat = await Chat.findOne({ location, book: bookId });
+  if (chat) {
+    // if yes, add them to pendingUsers
+    chat.pendingUsers.push(userId);
+    await chat.save();
+    console.log("Added user to pendingUsers of existing chat");
+    return res.status(200).json(chat);
+  }
 
-            if(isChat){
-                isChat.pendingUsers.push(req.user._id);
-                await isChat.save();
-                return res.status(200).json(isChat);
-            }
-        } catch(error){
-            res.status(400);
-            throw new Error("error in adding to the group->",error.message);
-        }
-       
-       
-        try{
+  // 4️⃣  No chat exists — create a new one
+  const admin = await Admin.findOne({ location });
+  if (!admin) {
+    res.status(404);
+    throw new Error("No admin found for this location");
+  }
 
-            const admin = await Admin.find({
-            location: req.user.location,
-            });
+  // create the chat
+  let newChat = await Chat.create({
+    chatName: "BookChat",
+    isPending: true,
+    pendingUsers: [userId],
+    groupAdmin: admin._id,
+    users: [admin._id],       // initially only admin in the group
+    book: bookId,
+    location,
+  });
 
-            var chatData= {
-            chatName:"BookChat",
-            isPending:false,
-            pendingUsers:[req.user._id],
-            groupAdmin: admin._id,
-            book:bookId,
-            location:req.user.location,
-        }
+  // re-fetch it with the populations we want
+  newChat = await Chat.findById(newChat._id)
+    .populate("groupAdmin", "-password")
+    .populate("pendingUsers", "-password");
 
-        console.log("Group is created->",chatData);
-        const fullChat = await Chat.findOne({_id:chatData._id}).populate("groupAdmin","-password");
-        console.log("FullChat->",fullChat);
-        res.status(200).send(fullChat);
-        } catch(error){
-            res.status(400);
-            throw new Error("Error in Adding to the group->",error.message);
-        }
-        
-        
-    }
+  console.log("Created new chat group ->", newChat);
+  return res.status(201).json(newChat);
 });
+
 
 // here this is the code for the searching the 
 // /chat?search
@@ -116,6 +113,10 @@ const allGroup = asyncHandler(async (req, res) => {
 
     // Filter based on search query (case-insensitive)
     let filteredBooks = boughtBooks;
+    // if(filteredBooks.size() === 0){
+    //     res.status(404).json([]);
+    //     // means i am sending the empty book so that front end .slice function will did not give any error
+    // }
 
     if (searchQuery) {
         const keywordRegex = new RegExp(searchQuery, "i"); // case-insensitive
@@ -128,5 +129,38 @@ const allGroup = asyncHandler(async (req, res) => {
     res.status(200).json(filteredBooks);
 });
 
+// here is the function for the fetching the chats for the currently
+// loggedin user
 
-export {accessChat,allGroup};
+const fetchChats = asyncHandler(async (req,res)=>{
+    try{
+        Chat.find({
+            $or: [
+                    { users: { $elemMatch: { $eq: req.user._id } } },
+                    { pendingUsers: { $elemMatch: { $eq: req.user._id } } }
+                ]
+        })
+        .populate("book")
+        .populate("users", "-password")
+        .populate("pendingUsers", "-password")
+        .populate("groupAdmin", "-password")
+        .populate("latestMessage")
+        .sort({ updatedAt: -1 })
+        .then(async (results) => {
+        results = await User.populate(results, {
+            path: "latestMessage.sender",
+            select: "fullName profilePic email", // or "name pic email" depending on your User model
+        });
+
+        console.log("Logged User chats->",results);
+        res.status(200).send(results);
+        })
+    } catch(error){
+       res.status(400);
+        throw new Error("Error in fetching the user->",error.message);
+
+    }
+});
+
+
+export {accessChat,allGroup,fetchChats};
