@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import Auth0Provider from './context/AuthProvider.jsx'
+import ChatProvider from './context/ChatProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
   // <StrictMode> 
@@ -12,9 +13,12 @@ createRoot(document.getElementById('root')).render(
   <BrowserRouter>
   
     <Auth0Provider>
-    <div className='dark:bg-slate-900 dark:text-white'>
-      <App />
-    </div>
+      <ChatProvider>
+        <div className='dark:bg-slate-900 dark:text-white'>
+          <App />
+        </div>
+      </ChatProvider>
+    
     </Auth0Provider>
     
   </BrowserRouter>

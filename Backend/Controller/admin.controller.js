@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
 import cookieParser from "cookie-parser";
 import { User } from "../model/user.model.js";
+import {uploadMultipleFiles} from "../utils/cloudinary.js"
 import { Book } from "../model/book.model.js";
 
 
@@ -32,32 +33,51 @@ const getAdminDashboard = async (req, res) => {
 };
 
 const signupAdmin = async (req, res) => {
+  console.log("here i am reaching 1");
   try {
-    const { fullname, email, password } = req.body;
-
+    const { fullname, email, password,location } = req.body;
+    console.log("Password->",password);
+    console.log("Email->",email);
+    console.log("here i am reaching 2");
     // 🔥 Check if user already exists
     const existingUser = await Admin.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
-
+    console.log("here i am reaching 6");
     // 🔥 Hash password
     const hashPassword = await bcrypt.hash(password, 10);
-
+    console.log("here i am reaching 7");
+    const profileLocalPath = req.file.path;
+        console.log("localProfilePath from Admin->",profileLocalPath);
+        let profile;
+        try{
+          profile= await uploadMultipleFiles([profileLocalPath]);
+          console.log("upoading the profile pic on the cloudinary from Admin",profile);
+        } catch(error){
+          console.log("Error while uploading profile pic from Admin",error);
+             throw new Error(500, "Failed to upload profile pic for Admin");
+        }
+    
+        console.log("Profile URL Admin->", profile?.[0]?.url);
+        console.log("here i am reaching 3");
     // 🔥 Create user
     const createUser = await Admin.create({
       fullname,
       email,
       password: hashPassword,
+      location: location,
+      profilePic:profile?.[0]?.url,
     });
 
+    console.log("here i am reaching 4");
     // 🔥 Generate JWT Token
     const token = jwt.sign(
       { _id: createUser._id, email },
       secret,
       { expiresIn: "5h" }
     );
-
+    //console.log("printing the token->",token);
     // ✅ Set token as HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
@@ -65,17 +85,20 @@ const signupAdmin = async (req, res) => {
     });
     console.log(res.cookies);
     
-
+    console.log("here i am reaching 5");
     res.status(201).json({
       message: "User created successfully",
       admin: {
         _id: createUser._id,
         fullname: createUser.fullname,
         email: createUser.email,
-        role:"user"
+        location: location,
+        role:"Admin", // changes the role to admin bcz it is admin
+        profilePic: createUser.profilePic,
       },
       token, // ✅ Sending token in response as well (optional)
     });
+    
 
   } catch (error) {
     console.error("Error in signup:", error.message);

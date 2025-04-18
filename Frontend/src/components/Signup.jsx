@@ -17,14 +17,16 @@ export default function Signup() {
 
   const handleSignup = async (data, isAdmin = false) => {
     console.log("sign up data ->",data);
+    console.log("IsAdmin->",isAdmin);
     const endpoint = isAdmin ? 'http://localhost:4000/admin/signup' : 'http://localhost:4000/user/signup';
-    const userInfo = {
-      fullname: data.fullname,
-      email: data.email,
-      password: data.password,
-      location:data.location,
-      profilePic:data.profilePic,
-    };
+    // const userInfo = {
+    //   fullname: data.fullname,
+    //   email: data.email,
+    //   password: data.password,
+    //   location:data.location,
+    //   profilePic:data.profilePic,
+    // };
+
     const formData = new FormData();
   formData.append('fullname', data.fullname);
   formData.append('email', data.email);
@@ -34,7 +36,7 @@ export default function Signup() {
   if (data.profilePic && data.profilePic.length > 0) {
     formData.append('profilePic', data.profilePic[0]); 
   }
-
+  // console.log("Form Data->",formData);
 
     try {
       
@@ -42,9 +44,11 @@ export default function Signup() {
     const response = await fetch(endpoint, {
       method: 'POST',
       body: formData, 
+      credentials: 'include',
     });
       
       const result = await response.json();
+      console.log(result.admin);
       if (response.ok) {
         toast.success(isAdmin ? 'Admin Signup Successful' : 'User Signup Successful');
         isAdmin ? localStorage.setItem('Users', JSON.stringify(result.admin)): localStorage.setItem('Users', JSON.stringify(result.user));

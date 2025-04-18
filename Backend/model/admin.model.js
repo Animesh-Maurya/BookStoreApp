@@ -20,6 +20,14 @@ const adminSchema = new Schema(
       type: String,
       required: true,
     },
+    location:{
+      type:String,
+      required: true,
+    },
+    profilePic:{
+            type: String,
+            require:false,
+    },
     createdBooks: [
       {
         type: Schema.Types.ObjectId,

@@ -20,7 +20,7 @@ import ProfilePage from './components/Pages/Profile.jsx';
 import Profile from './components/PROFILE.JSX';
 import Favorites from './components/Favorites.jsx';
 import BookDetails from './components/Pages/Book_id.jsx';
-
+import Connect from "./components/Connects/Connect.jsx";
 function App() {
   const [authUser, setAuthUser] = useAuth();
   // console.log("auth User at app.jsx ", authUser);
@@ -46,6 +46,7 @@ function App() {
         <Route path="/orders" element={<Profile />} />
         <Route path="/settings" element={<Profile />} />
         <Route path="/book/:id" element={<BookDetails />} />
+        <Route path="/connect" element={authUser ? <Connect /> : <Navigate to="/signup"/>} />
       </Routes>
       <Toaster />
     </GoogleOAuthProvider>
