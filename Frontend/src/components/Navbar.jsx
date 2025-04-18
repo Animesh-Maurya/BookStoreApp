@@ -55,6 +55,9 @@ export default function Navbar() {
       <li>
         <Link to="/about">About</Link>
       </li>
+      <li>
+        <Link to="/connect">Connect</Link>
+      </li>
     </>
   );
 

@@ -39,7 +39,7 @@ export default function Course() {
       }
     };
 
-    getBooks();
+     getBooks();
     getUserBooks();
   }, [userId]);
 
