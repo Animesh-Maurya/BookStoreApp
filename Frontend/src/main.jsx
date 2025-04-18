@@ -6,8 +6,8 @@ import { BrowserRouter } from 'react-router-dom'
 import Auth0Provider from './context/AuthProvider.jsx'
 import ChatProvider from './context/ChatProvider.jsx'
 
-createRoot(document.getElementById('root')).render(
-  // <StrictMode> 
+createRoot(document.getElementById("root")).render(
+  // <StrictMode>
   //   <App /> when we are using the StrictMode then the same component is rendering two times
   // </StrictMode>,
   // <React.StrictMode>
@@ -30,8 +30,7 @@ createRoot(document.getElementById('root')).render(
     </Auth0Provider>
     // </React.StrictMode>
 
-  // In React, BrowserRouter is a component provided by the react-router-dom library that enables 
-  // client-side routing for single-page applications (SPAs). It helps manage the browser's 
+  // In React, BrowserRouter is a component provided by the react-router-dom library that enables
+  // client-side routing for single-page applications (SPAs). It helps manage the browser's
   // history and URL path, allowing the application to display different components or pages based on the current URL.
-  
-)
+);
