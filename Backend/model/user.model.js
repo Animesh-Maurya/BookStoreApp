@@ -39,6 +39,12 @@ const userSchema = new Schema({
             ref:"Book"
         }
     ],
+    pending_books:[
+        {
+            type:Schema.Types.ObjectId,
+            ref:"Book"
+        }
+    ],
     bought_books: [
         {
             type: Schema.Types.ObjectId,

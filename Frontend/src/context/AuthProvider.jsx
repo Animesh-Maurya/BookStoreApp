@@ -3,23 +3,34 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 export const AuthContext = createContext();
 
 export default function AuthProvider({ children }) {
-  // Safe initialization of authUser
-  const initialAuthUser = typeof window !== "undefined" ? localStorage.getItem("Users") : null;
   const [authUser, setAuthUser] = useState(() => {
     try {
-      return initialAuthUser ? JSON.parse(initialAuthUser) : null;
+      const userData = localStorage.getItem("User");
+      const adminData = localStorage.getItem("Admin");
+
+      if (userData) return JSON.parse(userData);
+      if (adminData) return JSON.parse(adminData);
+      return null;
     } catch (error) {
       console.error("Error parsing auth user from localStorage:", error);
       return null;
     }
   });
 
-  // Update localStorage whenever authUser changes
   useEffect(() => {
     if (authUser) {
-      localStorage.setItem("Users", JSON.stringify(authUser));
+      // Determine role by checking if it's an Admin (you can improve this check with a role field)
+      const isAdmin = authUser?.role === "admin" || localStorage.getItem("Admin");
+      if (isAdmin) {
+        localStorage.setItem("Admin", JSON.stringify(authUser));
+        localStorage.removeItem("User");
+      } else {
+        localStorage.setItem("User", JSON.stringify(authUser));
+        localStorage.removeItem("Admin");
+      }
     } else {
-      localStorage.removeItem("Users");
+      localStorage.removeItem("User");
+      localStorage.removeItem("Admin");
     }
   }, [authUser]);
 
@@ -30,7 +41,7 @@ export default function AuthProvider({ children }) {
   );
 }
 
-// Custom hook for using Auth context safely
+// Custom hook for safe usage
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

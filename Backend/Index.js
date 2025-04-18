@@ -90,9 +90,7 @@ app.use("/chat/user/",chatRoutes);
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on the server`, 404));
 });
-// app.use("/auth", authRoute); // ✅ Added authentication route
 
-// Start Server
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
 });
