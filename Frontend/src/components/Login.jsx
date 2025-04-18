@@ -1,5 +1,4 @@
-
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -11,37 +10,91 @@ function Login() {
   const navigate = useNavigate();
   const [authUser, setAuthUser] = useContext(AuthContext);
 
-  useEffect(() => {
-    // Auto-close modal when navigating away
-    return () => {
-      document.getElementById('my_modal_3')?.close();
-    };
-  }, []);
+  const modal = document.getElementById('my_modal_3');
 
-  const responseGoogle = async (authResult) => {
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data === "googleLoginSuccess") {
+        modal?.close();
+        navigate('/');
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+      modal?.close();
+    };
+  }, [navigate]);
+
+  const { register, handleSubmit, formState: { errors } } = useForm();
+
+  const handleUserLogin = async (url, credentials, userType) => {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(credentials),
+      });
+
+      const responseData = await res.json();
+
+      if (!res.ok) throw new Error(responseData.message || `${userType} login failed`);
+
+      toast.success(`${userType} Logged in Successfully`);
+
+      const userData = userType === 'Admin' ? responseData.admin : responseData.user;
+
+      setAuthUser(userData);
+
+      // ✅ Store under different keys
+      if (userType === 'Admin') {
+        localStorage.setItem("Admin", JSON.stringify(userData));
+      } else {
+        localStorage.setItem("User", JSON.stringify(userData));
+      }
+
+      modal?.close();
+      navigate('/');
+    } catch (error) {
+      console.error(`${userType} login error:`, error);
+      toast.error("Error: " + error.message);
+    }
+  };
+
+  const onSubmit = (data) => {
+    handleUserLogin("http://localhost:4000/user/login", data, "User");
+  };
+
+  const onAdminSubmit = (data) => {
+    handleUserLogin("http://localhost:4000/user/admin/login", data, "Admin");
+  };
+
+  const responseGoogle = useCallback(async (authResult) => {
     try {
       if (authResult.code) {
-        // Call our backend's Google login route using our fetch API helper
         const result = await googleAuth(authResult.code);
-        // Update context with logged-in user
-        setAuthUser(result.user);
         const { fullname } = result.user;
+
+        setAuthUser(result.user);
+        localStorage.setItem("User", JSON.stringify(result.user)); // Google login = normal user
+
         toast.success(`Welcome, ${fullname}!`);
-        localStorage.setItem("Users", JSON.stringify(result.user));
 
         if (window.opener) {
           window.opener.postMessage("googleLoginSuccess", "*");
           window.close();
         } else {
-          document.getElementById('my_modal_3').close();
+          modal?.close();
           navigate('/');
         }
       }
     } catch (error) {
-      console.error("Error during Google login:", error);
+      console.error("Google auth failed:", error);
       toast.error("Google authentication failed!");
     }
-  };
+  }, [navigate, setAuthUser]);
 
   const googleLogin = useGoogleLogin({
     onSuccess: responseGoogle,
@@ -50,73 +103,6 @@ function Login() {
     ux_mode: 'popup'
   });
 
-  window.addEventListener("message", (event) => {
-    if (event.data === "googleLoginSuccess") {
-      document.getElementById('my_modal_3').close();
-      navigate('/');
-    }
-  });
-
-  const { register, handleSubmit, formState: { errors } } = useForm();
-
-  const onSubmit = async (data) => {
-    try {
-      const res = await fetch("http://localhost:4000/user/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",  // Ensures cookies are sent/received
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
-      });
-
-      const responseData = await res.json();
-      if (!res.ok) {
-        throw new Error(responseData.message || "Login failed");
-      }
-
-      toast.success("Logged in Successfully");
-      // Update AuthContext
-      setAuthUser(responseData.user);
-      localStorage.setItem("Users", JSON.stringify(responseData.user));
-
-      document.getElementById('my_modal_3').close();
-      navigate('/');
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Error: " + error.message);
-    }
-  };
-
-    const onAdminSubmit = async (data) => {
-    try {
-      const res = await fetch("http://localhost:4000/user/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
-      });
-
-      const responseData = await res.json();
-      if (!res.ok) {
-        throw new Error(responseData.message || "Admin login failed");
-      }
-
-      toast.success("Admin Logged in Successfully");
-      setAuthUser(responseData.admin);
-      localStorage.setItem("Admin", JSON.stringify(responseData.admin));
-      document.getElementById('my_modal_3').close();
-      navigate('/');
-    } catch (error) {
-      console.error("Admin login error:", error);
-      toast.error("Error: " + error.message);
-    }
-  };
-
   return (
     <div>
       <dialog id="my_modal_3" className="modal">
@@ -124,7 +110,7 @@ function Login() {
           <form onSubmit={handleSubmit(onSubmit)}>
             <button
               type="button"
-              onClick={() => document.getElementById('my_modal_3').close()}
+              onClick={() => modal?.close()}
               className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
             >
               ✕
@@ -156,7 +142,6 @@ function Login() {
                 Login with Google
               </button>
               <button type="button" className="btn btn-primary w-80" onClick={handleSubmit(onAdminSubmit)}>Admin Login</button>
-
               <p>Not Registered? <Link to="/signup" className="underline text-blue-500 cursor-pointer">Signup</Link></p>
             </div>
           </form>

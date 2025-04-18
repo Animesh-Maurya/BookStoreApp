@@ -26,7 +26,6 @@ function App() {
   // console.log("auth User at app.jsx ", authUser);
   
   return (
-    <AuthProvider>
     <GoogleOAuthProvider clientId="576465356327-501k2vs4bv48ibc54f4c4519j8gitj9g.apps.googleusercontent.com">
       <Routes>
         <Route path="/" element={<Home />} />
@@ -49,7 +48,6 @@ function App() {
       </Routes>
       <Toaster />
     </GoogleOAuthProvider>
-    </AuthProvider>
   );
 }
 
