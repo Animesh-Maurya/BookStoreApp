@@ -22,9 +22,9 @@ createRoot(document.getElementById('root')).render(
       </ChatProvider>
     
     </Auth0Provider>
-    <div className='dark:bg-slate-900 dark:text-white'>
+    {/* <div className='dark:bg-slate-900 dark:text-white'>
       <App />
-    </div>
+    </div> */}
     
   </BrowserRouter>
     </Auth0Provider>

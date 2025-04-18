@@ -21,6 +21,7 @@ import Profile from './components/PROFILE.JSX';
 import Favorites from './components/Favorites.jsx';
 import BookDetails from './components/Pages/Book_id.jsx';
 import Connect from "./components/Connects/Connect.jsx";
+import Sidebar from './components/Connects/Sidebar.jsx';
 function App() {
   const [authUser, setAuthUser] = useAuth();
   // console.log("auth User at app.jsx ", authUser);
