@@ -8,13 +8,14 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Admin } from "../model/admin.model.js";
 import { Book } from "../model/book.model.js";
 import mongoose from "mongoose";
-
+import {uploadMultipleFiles} from "../utils/cloudinary.js"
 const salt = bcrypt.genSaltSync(10);
 const secret = "jn4k5n6n5nnn6oi4n";
 
 const signup = async (req, res) => {
+  //console.log("here i am printing signup data->",req.file);
   try {
-    const { fullname, email, password } = req.body;
+    const { fullname, email, password,location} = req.body;
 
     // 🔥 Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -25,11 +26,26 @@ const signup = async (req, res) => {
     // 🔥 Hash password
     const hashPassword = await bcrypt.hash(password, 10);
 
+    const profileLocalPath = req.file.path;
+    console.log("localProfilePath->",profileLocalPath);
+    let profile;
+    try{
+      profile= await uploadMultipleFiles([profileLocalPath]);
+      console.log("upoading the profile pic on the cloudinary",profile);
+    } catch(error){
+      console.log("Error while uploading profile pic",error);
+         throw new Error(500, "Failed to upload profile pic");
+    }
+
+    console.log("Profile URL ->", profile?.[0]?.url);
+
     // 🔥 Create user
     const createUser = await User.create({
       fullname,
       email,
       password: hashPassword,
+      location,
+      profilePic:profile?.[0]?.url,
     });
 
     // 🔥 Generate JWT Token
@@ -53,7 +69,9 @@ const signup = async (req, res) => {
         _id: createUser._id,
         fullname: createUser.fullname,
         email: createUser.email,
-        role:"user"
+        role:"user",
+        location: createUser.location,
+        profilePic: createUser.profilePic,
       },
       token, // ✅ Sending token in response as well (optional)
     });
@@ -372,7 +390,7 @@ const getUserById = async (req, res) => {
     const userId = req.params.id;
 
     const user = await User.findById(userId)
-      .populate("favourites", "name image")
+      .populate("favourites", "name image profilePic") // here i had added the profilePic
       .populate("bought_books", "name image")
       .select("-password");
 

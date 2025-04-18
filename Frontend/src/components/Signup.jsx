@@ -16,19 +16,33 @@ export default function Signup() {
   } = useForm();
 
   const handleSignup = async (data, isAdmin = false) => {
+    console.log("sign up data ->",data);
     const endpoint = isAdmin ? 'http://localhost:4000/admin/signup' : 'http://localhost:4000/user/signup';
     const userInfo = {
       fullname: data.fullname,
       email: data.email,
       password: data.password,
+      location:data.location,
+      profilePic:data.profilePic,
     };
+    const formData = new FormData();
+  formData.append('fullname', data.fullname);
+  formData.append('email', data.email);
+  formData.append('password', data.password);
+  formData.append('location', data.location);
+
+  if (data.profilePic && data.profilePic.length > 0) {
+    formData.append('profilePic', data.profilePic[0]); 
+  }
+
 
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userInfo),
-      });
+      
+  
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: formData, 
+    });
       
       const result = await response.json();
       if (response.ok) {
@@ -76,6 +90,36 @@ export default function Signup() {
                 <br />
                 <input type='password' placeholder='Enter your Password' className='w-80 px-3 py-1 border rounded-md outline-none' {...register('password', { required: true })} />
                 {errors.password && <span className='text-sm text-red-500'>This field is required</span>}
+              </div>
+              {/* Location */}
+              <div className='mt-4 space-y-2'>
+                  <label htmlFor='location'>Location</label>
+                  <input id='location' type='text' placeholder='Enter your Location' className='w-80 px-3 py-1 border rounded-md outline-none' {...register('location', { required: true })} />
+                  {errors.location && <span className='text-sm text-red-500'>This field is required</span>}
+              </div>
+              
+              {/* Profile pic */}
+              <div className='mt-4 space-y-2'>
+                  <input 
+                  type="file"
+                  accept=".jpg,.jpeg,.png"
+                  {...register("profilePic", {
+                  required: false,
+                  validate: (fileList) => {
+                  if (!fileList || fileList.length === 0) return true; // No file = valid
+                  const file = fileList[0];
+                  const allowedExtensions = ["image/jpeg", "image/png", "image/jpg"];
+                  return allowedExtensions.includes(file.type)
+                  ? true
+                  : "Invalid file type! Only .png, .jpg, and .jpeg files are accepted.";
+                  },
+                })}
+              style={{ marginBottom: "10px" }} 
+            />
+            {errors.profilePic && (
+            <p style={{ color: "red" }}>{errors.profilePic.message}</p>
+            )}
+
               </div>
 
               {/* Buttons */}

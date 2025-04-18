@@ -1,6 +1,6 @@
-import multer from "multer"
+import multer from "multer";
 
-export const upload = multer({
+const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, "./public/temp");
@@ -11,3 +11,4 @@ export const upload = multer({
   }),
 });
 
+export { upload }; // ✅ Named export
