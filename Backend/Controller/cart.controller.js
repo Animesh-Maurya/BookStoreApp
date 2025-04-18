@@ -9,13 +9,12 @@ const getUserCart = async (req, res) => {
         return res.status(400).json({ message: "User ID is required" });
       }
   
-      const user = await User.findById(userId).populate("cart").populate("pending_books");
-  
+      const user = await User.findById(userId).populate("cart");  
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
   
-      res.status(200).json({ cart: user.cart, pending_books: user.pending_books });
+      res.status(200).json({ cart: user.cart });
     } catch (error) {
       console.error("Error fetching cart and pending books:", error);
       res.status(500).json({ message: "Server error while fetching cart and pending books" });
